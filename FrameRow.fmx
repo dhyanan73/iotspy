@@ -1,0 +1,276 @@
+object fraRow: TfraRow
+  Align = Top
+  Size.Width = 1354.000000000000000000
+  Size.Height = 38.000000000000000000
+  Size.PlatformDefault = False
+  object panRow: TPanel
+    Align = Client
+    Margins.Bottom = 4.000000000000000000
+    Size.Width = 1354.000000000000000000
+    Size.Height = 34.000000000000000000
+    Size.PlatformDefault = False
+    StyleLookup = 'panelstyle'
+    TabOrder = 0
+    object panCommands: TPanel
+      Align = Right
+      Position.X = 1324.000000000000000000
+      Size.Width = 30.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+      object cmdDelete: TButton
+        Align = Right
+        Size.Width = 30.000000000000000000
+        Size.Height = 34.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = 'deleteitembutton'
+        TabOrder = 1
+        Text = 'Delete'
+      end
+    end
+    object panStatus: TPanel
+      Align = Right
+      Position.X = 1284.000000000000000000
+      Size.Width = 40.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 3
+      object lblStatus: TLabel
+        Align = Client
+        AutoSize = True
+        StyledSettings = [Size, FontColor]
+        Size.Width = 40.000000000000000000
+        Size.Height = 34.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.Family = 'Courier New'
+        TextSettings.Font.StyleExt = {00070000000000000004000000}
+        TextSettings.HorzAlign = Center
+        TextSettings.WordWrap = False
+        Text = 'NEW'
+        TabOrder = 1
+      end
+    end
+    object panSelected: TPanel
+      Align = Left
+      Padding.Left = 7.000000000000000000
+      Size.Width = 31.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 4
+      object chkSelRow: TCheckBox
+        Align = Client
+        Size.Width = 24.000000000000000000
+        Size.Height = 34.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+      end
+    end
+    object panHost: TPanel
+      Align = Left
+      Position.X = 31.000000000000000000
+      Size.Width = 120.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 6
+      object lblHost: TLabel
+        Align = Client
+        AutoSize = True
+        StyledSettings = [Size]
+        Margins.Left = 4.000000000000000000
+        Margins.Right = 4.000000000000000000
+        Size.Width = 112.000000000000000000
+        Size.Height = 34.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.Family = 'Courier New'
+        TextSettings.Font.StyleExt = {04070000000000000004000000}
+        TextSettings.FontColor = claBlue
+        TextSettings.HorzAlign = Center
+        TextSettings.WordWrap = False
+        TabOrder = 0
+      end
+    end
+    object panPort: TPanel
+      Align = Left
+      Position.X = 151.000000000000000000
+      Size.Width = 50.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 5
+      object lblPort: TLabel
+        Align = Client
+        AutoSize = True
+        StyledSettings = [Size]
+        Margins.Left = 4.000000000000000000
+        Margins.Right = 4.000000000000000000
+        Size.Width = 42.000000000000000000
+        Size.Height = 34.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.Family = 'Courier New'
+        TextSettings.Font.StyleExt = {04070000000000000004000000}
+        TextSettings.FontColor = claBlue
+        TextSettings.HorzAlign = Center
+        TextSettings.WordWrap = False
+        TabOrder = 1
+      end
+    end
+    object panCountry: TPanel
+      Align = Left
+      Position.X = 321.000000000000000000
+      Size.Width = 30.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 7
+      object lblCountry: TLabel
+        Align = Client
+        AutoSize = True
+        Margins.Left = 4.000000000000000000
+        Margins.Right = 4.000000000000000000
+        Size.Width = 22.000000000000000000
+        Size.Height = 34.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        TextSettings.WordWrap = False
+        TabOrder = 0
+      end
+    end
+    object panProvider: TPanel
+      Align = Left
+      Position.X = 441.000000000000000000
+      Size.Width = 90.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 9
+      object lblProvider: TLabel
+        Align = Client
+        AutoSize = True
+        Margins.Left = 4.000000000000000000
+        Margins.Top = 2.000000000000000000
+        Margins.Right = 4.000000000000000000
+        Margins.Bottom = 2.000000000000000000
+        Size.Width = 82.000000000000000000
+        Size.Height = 30.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        TextSettings.Trimming = Word
+        TabOrder = 1
+      end
+    end
+    object panCity: TPanel
+      Align = Left
+      Position.X = 351.000000000000000000
+      Size.Width = 90.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 8
+      object lblCity: TLabel
+        Align = Client
+        AutoSize = True
+        Margins.Left = 4.000000000000000000
+        Margins.Top = 2.000000000000000000
+        Margins.Right = 4.000000000000000000
+        Margins.Bottom = 2.000000000000000000
+        Size.Width = 82.000000000000000000
+        Size.Height = 30.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        TextSettings.Trimming = Word
+        TabOrder = 1
+      end
+    end
+    object panNotes: TPanel
+      Align = Right
+      Position.X = 1134.000000000000000000
+      Size.Width = 150.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 11
+      object txtNotes: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Align = Client
+        TabOrder = 1
+        Size.Width = 150.000000000000000000
+        Size.Height = 34.000000000000000000
+        Size.PlatformDefault = False
+      end
+    end
+    object panPlacement: TPanel
+      Align = Right
+      Position.X = 1036.000000000000000000
+      Size.Width = 98.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 13
+      object cboPlacement: TComboBox
+        Align = Client
+        Items.Strings = (
+          ''
+          'Open rural'
+          'Open urban'
+          'Farm'
+          'Shop'
+          'Public house'
+          'Private house'
+          'Vehicle'
+          'Aircraft'
+          'Other')
+        Size.Width = 98.000000000000000000
+        Size.Height = 34.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+      end
+    end
+    object panRating: TPanel
+      Align = Right
+      Position.X = 1002.000000000000000000
+      Size.Width = 34.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 12
+      object cboRating: TComboBox
+        Align = Client
+        Items.Strings = (
+          ''
+          '1'
+          '2'
+          '3'
+          '4'
+          '5')
+        Size.Width = 34.000000000000000000
+        Size.Height = 34.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+      end
+    end
+    object panAuth: TPanel
+      Align = Left
+      Position.X = 201.000000000000000000
+      Size.Width = 120.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 15
+      object lblAuth: TLabel
+        Align = Client
+        AutoSize = True
+        StyledSettings = [Size]
+        Margins.Top = 2.000000000000000000
+        Margins.Bottom = 2.000000000000000000
+        Size.Width = 120.000000000000000000
+        Size.Height = 30.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.Font.Family = 'Courier New'
+        TextSettings.Font.StyleExt = {04070000000000000004000000}
+        TextSettings.FontColor = claBlue
+        TextSettings.HorzAlign = Center
+        TextSettings.Trimming = Word
+        TabOrder = 1
+      end
+    end
+    object layRowData: TLayout
+      Align = Client
+      Size.Width = 471.000000000000000000
+      Size.Height = 34.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 17
+    end
+  end
+end
