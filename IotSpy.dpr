@@ -8,7 +8,8 @@ uses
   FrameRowData in 'FrameRowData.pas' {fraRowData: TFrame},
   FrameNetwaveCam in 'Devices\FrameNetwaveCam.pas' {fraNetwaveCam: TFrame},
   ClassDeviceConnect in 'ClassDeviceConnect.pas',
-  ClassDCNetwaveCam in 'Devices\ClassDCNetwaveCam.pas';
+  ClassDCNetwaveCam in 'Devices\ClassDCNetwaveCam.pas',
+  ShodanAPI in 'ShodanAPI.pas';
 
 {$R *.res}
 

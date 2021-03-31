@@ -36,7 +36,7 @@ object frmMain: TfrmMain
     Size.PlatformDefault = False
     StyleLookup = 'tabcontrolstyle'
     TabHeight = 49.000000000000000000
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 1
     TabPosition = PlatformDefault
     Sizes = (
@@ -50,7 +50,7 @@ object frmMain: TfrmMain
       CustomIcon = <
         item
         end>
-      IsSelected = True
+      IsSelected = False
       Padding.Left = 10.000000000000000000
       Padding.Top = 10.000000000000000000
       Padding.Right = 10.000000000000000000
@@ -164,8 +164,8 @@ object frmMain: TfrmMain
         Size.Height = 100.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 2
-        Viewport.Width = 796.000000000000000000
-        Viewport.Height = 96.000000000000000000
+        Viewport.Width = 800.000000000000000000
+        Viewport.Height = 100.000000000000000000
       end
     end
     object tabArchive: TTabItem
@@ -186,7 +186,7 @@ object frmMain: TfrmMain
       CustomIcon = <
         item
         end>
-      IsSelected = False
+      IsSelected = True
       Size.Width = 266.000000000000000000
       Size.Height = 49.000000000000000000
       Size.PlatformDefault = False
@@ -195,6 +195,80 @@ object frmMain: TfrmMain
       Text = 'Settings'
       ExplicitSize.cx = 267.000000000000000000
       ExplicitSize.cy = 49.000000000000000000
+      object tabSettingsContent: TTabControl
+        Align = Client
+        FullSize = True
+        Padding.Left = 5.000000000000000000
+        Padding.Right = 5.000000000000000000
+        Padding.Bottom = 5.000000000000000000
+        Size.Width = 800.000000000000000000
+        Size.Height = 471.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = 'tabcontrolstyle'
+        TabHeight = 49.000000000000000000
+        TabIndex = 0
+        TabOrder = 1
+        TabPosition = PlatformDefault
+        Sizes = (
+          790s
+          417s
+          790s
+          417s)
+        object tabSystem: TTabItem
+          CustomIcon = <
+            item
+            end>
+          IsSelected = True
+          Padding.Left = 10.000000000000000000
+          Padding.Top = 10.000000000000000000
+          Padding.Right = 10.000000000000000000
+          Padding.Bottom = 10.000000000000000000
+          Size.Width = 399.000000000000000000
+          Size.Height = 49.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'tabitemstyle'
+          TabOrder = 0
+          Text = 'System'
+          ExplicitSize.cx = 50.000000000000000000
+          ExplicitSize.cy = 49.000000000000000000
+          object grpAPIKey: TGroupBox
+            Align = Top
+            Padding.Left = 10.000000000000000000
+            Padding.Top = 20.000000000000000000
+            Padding.Right = 10.000000000000000000
+            Padding.Bottom = 10.000000000000000000
+            Size.Width = 790.000000000000000000
+            Size.Height = 55.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Shodan.io API Key'
+            TabOrder = 0
+            object txtAPIKey: TEdit
+              Touch.InteractiveGestures = [LongTap, DoubleTap]
+              Align = Top
+              TabOrder = 1
+              Position.X = 10.000000000000000000
+              Position.Y = 20.000000000000000000
+              Size.Width = 770.000000000000000000
+              Size.Height = 22.000000000000000000
+              Size.PlatformDefault = False
+            end
+          end
+        end
+        object TabItem2: TTabItem
+          CustomIcon = <
+            item
+            end>
+          IsSelected = False
+          Size.Width = 399.000000000000000000
+          Size.Height = 49.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = ''
+          TabOrder = 0
+          Text = 'TabItem2'
+          ExplicitSize.cx = 399.000000000000000000
+          ExplicitSize.cy = 49.000000000000000000
+        end
+      end
     end
   end
   object panCommands: TPanel

@@ -10,6 +10,9 @@ uses
   FMX.ScrollBox, FMX.Memo, FMX.Objects, FrameRow, ClassDeviceConnect;
 
 type
+
+  TIoTLogType = (ltUnknown, ltInfo, ltAlert, ltError);
+
   TfrmMain = class(TForm)
     tbrHeader: TToolBar;
     lblToolBar: TLabel;
@@ -31,6 +34,11 @@ type
     layRows: TLayout;
     tabSettings: TTabItem;
     txtLog: TMemo;
+    tabSettingsContent: TTabControl;
+    tabSystem: TTabItem;
+    TabItem2: TTabItem;
+    grpAPIKey: TGroupBox;
+    txtAPIKey: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormGesture(Sender: TObject; const EventInfo: TGestureEventInfo; var Handled: Boolean);
     procedure cmdExitClick(Sender: TObject);
@@ -39,7 +47,7 @@ type
   private
     function DeviceConnect(DeviceType: TIoTDeviceType; Host: string; Port: integer; Auth: string; out Msg: string): TfraRow;
   public
-    { Public declarations }
+    procedure Log(const Msg: string; LogType: TIoTLogType = TIoTLogType.ltInfo);
   end;
 
 var
@@ -53,7 +61,8 @@ uses
   ClassDCNetwaveCam
   , System.Generics.Collections
   , FrameRowData
-  , FrameNetwaveCam;
+  , FrameNetwaveCam
+  , ShodanAPI;
 
 procedure TfrmMain.cmdExitClick(Sender: TObject);
 begin
@@ -65,10 +74,53 @@ end;
 procedure TfrmMain.cmdSearchClick(Sender: TObject);
 var
   Row: TfraRow;
-  Msg: string;
+  Msg, Query, APIKey: string;
+  QueryResult: TShoResponse;
 
 begin
 
+  Query := Trim(txtSearch.Text);
+
+  if Query = '' then
+  begin
+    Log('Invalid search query.', ltError);
+    txtSearch.SetFocus;
+    Exit;
+  end;
+
+  APIKey := Trim(txtAPIKey.Text);
+
+  if APIKey = '' then
+  begin
+    Log('Invalid API key.', ltError);
+    tabMain.TabIndex := 2;
+    tabSettingsContent.TabIndex := 0;
+    txtAPIKey.SetFocus;
+    Exit;
+  end;
+
+  Log('Searching...');
+  QueryResult := GetQueryResults(APIKey, Query, Msg);
+
+  if Assigned(QueryResult) then
+  begin
+    try
+      Log(Format('%d matches found', [QueryResult.total]));
+      Log(Format('Start loading %d matches...', [Length(QueryResult.matches)]));
+    finally
+      QueryResult.Free;
+    end;
+  end
+  else
+    Log(Msg, ltError);
+
+
+
+
+
+
+
+{
   Row := DeviceConnect(TIoTDeviceType.dtNetwaveCam, '88.1.116.214', 8069, 'admin:123456', Msg);
 
   if Assigned(Row) then
@@ -80,7 +132,8 @@ begin
     layRows.Height := Row.Height * layRows.Tag;
   end;
 
-  txtLog.Lines.Add(Msg);
+  Log(Msg);
+}
 
 end;
 
@@ -120,7 +173,7 @@ begin
   else
   begin
     FreeAndNil(Result);
-    Msg := 'ERRORE: ' + Err;
+    Msg := 'ERROR: ' + Err;
   end;
 
 end;
@@ -153,6 +206,25 @@ begin
     end;
   end;
 {$ENDIF}
+
+end;
+
+procedure TfrmMain.Log(const Msg: string; LogType: TIoTLogType);
+var
+  Log: string;
+
+begin
+
+  Log := Format('[%s] ', [DateTimeToStr(Now)]);
+
+  case LogType of
+    TIoTLogType.ltAlert : Log := Log + '(ALERT) ';
+    TIoTLogType.ltError : Log := Log + '(ERROR) ';
+  end;
+
+  Log := Log + Trim(Msg);
+  txtLog.Lines.Add(Log);
+  Application.ProcessMessages;
 
 end;
 
