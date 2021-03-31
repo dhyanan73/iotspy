@@ -9,7 +9,9 @@ uses
   FrameNetwaveCam in 'Devices\FrameNetwaveCam.pas' {fraNetwaveCam: TFrame},
   ClassDeviceConnect in 'ClassDeviceConnect.pas',
   ClassDCNetwaveCam in 'Devices\ClassDCNetwaveCam.pas',
-  ShodanAPI in 'ShodanAPI.pas';
+  ShodanAPI in 'ShodanAPI.pas',
+  SettingsPersistence in 'SettingsPersistence.pas',
+  Constants in 'Constants.pas';
 
 {$R *.res}
 

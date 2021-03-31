@@ -2,6 +2,10 @@ unit ShodanAPI;
 
 interface
 
+  uses
+    Main,
+    System.Classes;
+
   const
     SHODAN_API_ENDPOINT = 'https://api.shodan.io/shodan/host';
 
@@ -135,7 +139,16 @@ interface
       procedure ConcatMatches(Matches: TArray<TShoMatch>);
     end;
 
-    function GetQueryResults(ApiKey: string; Query: string; out ErrMsg: string; MaxCount: Int64 = 0; Retries: word = 5): TShoResponse;
+procedure GetQueryResults  (
+                                var Result: TShoResponse;
+                                ApiKey: string;
+                                Query: string;
+                                var ErrMsg: string;
+                                MaxCount: Int64 = 0;
+                                Retries: word = 5;
+                                ProgressCallback: TProgressCallback = nil;
+                                TaskFinishedCallBack: TThreadProcedure = nil
+                              );
 
 implementation
 
@@ -151,49 +164,7 @@ uses
   , REST.Types
   , System.JSON
   , System.SysUtils
-  , FMX.Forms
-
-// [START] DEBUG
-  , System.Classes;
-
-function GetUUID(Clean: boolean = false): string;
-var
-  GUID: TGUID;
-
-begin
-
-  Result := '';
-
-  if CreateGUID(GUID) = 0 then
-     Result := GUIDToString(GUID);
-
-  if Clean then
-  begin
-    Result := StringReplace(Result, '{', '', [rfReplaceAll]);
-    Result := StringReplace(Result, '}', '', [rfReplaceAll]);
-    Result := StringReplace(Result, '-', '', [rfReplaceAll]);
-  end;
-
-end;
-
-procedure StrToFile(const FileName, SourceString: string);
-var
-  List: TStringList;
-
-begin
-
-  List := TStringList.Create;
-
-  try
-    List.Text := SourceString;
-    List.SaveToFile(FileName);
-  finally
-    List.Free;
-  end;
-
-end;
-
-// [END] DEBUG
+  , FMX.Forms;
 
 function APIRequest(Resource: string; out ErrMsg: string; Params: TDictionary<string, string>; ApiKey: string; Page: Int64 = 1): TJSONObject;
 var
@@ -236,9 +207,6 @@ begin
           RESTRequest.Response := RESTResponse;
           RESTRequest.Execute;
           Content := RESTResponse.Content;
-
-//          StrToFile(GetUUID(true) + '.json', Content);  // debug
-
           JSON := TJSONObject.Create;
           if JSON.Parse(BytesOf(Content), 0) > 0 then
             Result := JSON;
@@ -261,7 +229,16 @@ begin
 
 end;
 
-function GetQueryResults(ApiKey: string; Query: string; out ErrMsg: string; MaxCount: Int64 = 0; Retries: word = 5): TShoResponse;
+procedure GetQueryResults  (
+                                var Result: TShoResponse;
+                                ApiKey: string;
+                                Query: string;
+                                var ErrMsg: string;
+                                MaxCount: Int64 = 0;
+                                Retries: word = 5;
+                                ProgressCallback: TProgressCallback = nil;
+                                TaskFinishedCallBack: TThreadProcedure = nil
+                              );
 var
   QueryResult: TJSONObject;
   Params: TDictionary<string, string>;
@@ -269,122 +246,196 @@ var
   LReader: TNeonDeserializerJSON;
   MaxPages: Int64;
   Response: TShoResponse;
-  Page: Int64;
+  Page, Total, CurrMatches: Int64;
   Retry: word;
+//  CurrStatus: TProcessStatus;
 
 begin
 
   Result := nil;
+//  CurrStatus := TProcessStatus.psStart;
+
+//  if Assigned(StatusCallback) then
+//    StatusCallback(CurrStatus);
+
+//  CurrStatus := TProcessStatus.psInProgress;
 
   try
-    Params := TDictionary<string, string>.Create;
     try
-      Params.Add('query', Query);
-      MaxPages := 0;
-      if MaxCount > 0 then
-      begin
-        MaxPages := Trunc(MaxCount / 100);
-        if (MaxCount - (MaxPages * 100)) <> 0 then
-          MaxPages := MaxPages + 1;
-      end;
-      LConfig :=  TNeonConfiguration.Default
-                  .SetMemberCase(TNeonCase.SnakeCase)
-                  .SetMembers([TNeonMembers.Properties])
-                  .SetIgnoreFieldPrefix(false)
-                  .SetVisibility([mvPublic]);
-      LReader := TNeonDeserializerJSON.Create(LConfig);
+      Params := TDictionary<string, string>.Create;
       try
-        Retry := 0;
-        repeat
-          Application.ProcessMessages;
-          QueryResult := APIRequest('search', ErrMsg, Params, ApiKey);
-          Application.ProcessMessages;
-          if not Assigned(QueryResult) then
-          begin
-            Retry := Retry + 1;
-            Application.ProcessMessages;
-            Sleep(1000);
-            Application.ProcessMessages;
-          end;
-        until Assigned(QueryResult) or (Retry > Retries);
-        if Assigned(QueryResult) then
+        Params.Add('query', Query);
+        MaxPages := 0;
+        if MaxCount > 0 then
         begin
-          try
-            Result := TShoResponse.Create;
-            LReader.JSONToObject(Result, QueryResult);
-            if Assigned(Result) then
+          MaxPages := Trunc(MaxCount / 100);
+          if (MaxCount - (MaxPages * 100)) <> 0 then
+            MaxPages := MaxPages + 1;
+        end;
+        LConfig :=  TNeonConfiguration.Default
+                    .SetMemberCase(TNeonCase.SnakeCase)
+                    .SetMembers([TNeonMembers.Properties])
+                    .SetIgnoreFieldPrefix(false)
+                    .SetVisibility([mvPublic]);
+        LReader := TNeonDeserializerJSON.Create(LConfig);
+        try
+          Retry := 0;
+          repeat
+            QueryResult := APIRequest('search', ErrMsg, Params, ApiKey);
+            if Assigned(ProgressCallback) then
+              TThread.Synchronize(
+                              TThread.CurrentThread,
+                              procedure
+                              begin
+                                ProgressCallback(0, 100);
+                              end
+              );
+{
+            if Assigned(StatusCallback) then
             begin
-              Page := 2;
-              Retry := 0;
-              while (Assigned(QueryResult) or (Retry <= Retries)) and ((MaxPages = 0) or (Page <= MaxPages)) do
+              StatusCallback(CurrStatus);
+              if CurrStatus = TProcessStatus.psEnded then
+                Exit;
+            end;
+}
+            if not Assigned(QueryResult) then
+            begin
+              Retry := Retry + 1;
+              TThread.Sleep(1000);
+            end;
+          until Assigned(QueryResult) or (Retry > Retries);
+          if Assigned(QueryResult) then
+          begin
+            try
+              Result := TShoResponse.Create;
+              LReader.JSONToObject(Result, QueryResult);
+{
+              if Assigned(StatusCallback) then
               begin
-                Application.ProcessMessages;
-                QueryResult := APIRequest('search', ErrMsg, Params, ApiKey, Page);
-                Application.ProcessMessages;
-                if Assigned(QueryResult) then
+                StatusCallback(CurrStatus);
+                if CurrStatus = TProcessStatus.psEnded then
+                  Exit;
+              end;
+}
+              if Assigned(Result) then
+              begin
+                if Assigned(ProgressCallback) then
                 begin
-                    Retry := 0;
-                    Response := TShoResponse.Create;
-                    LReader.JSONToObject(Response, QueryResult);
-                    if Assigned(Response) then
-                    begin
-                      try
-                        if Response.error = '' then
-                        begin
-                          if Length(Response.matches) = 0 then
-                            Exit;
-                          Result.ConcatMatches(Response.matches);
-                        end
-                        else
-                        begin
-                          Result := nil;
-                          ErrMsg := Response.error;
+                  Total := Result.total;
+                  TThread.Synchronize(
+                                  TThread.CurrentThread,
+                                  procedure
+                                  begin
+                                    ProgressCallback(Total, 100);
+                                  end
+                  );
+                end;
+                Page := 2;
+                Retry := 0;
+                while (Assigned(QueryResult) or (Retry <= Retries)) and ((MaxPages = 0) or (Page <= MaxPages)) do
+                begin
+                  QueryResult := APIRequest('search', ErrMsg, Params, ApiKey, Page);
+{
+                  if Assigned(StatusCallback) then
+                  begin
+                    StatusCallback(CurrStatus);
+                    if CurrStatus = TProcessStatus.psEnded then
+                      Exit;
+                  end;
+}
+                  if Assigned(QueryResult) then
+                  begin
+                      Retry := 0;
+                      Response := TShoResponse.Create;
+                      LReader.JSONToObject(Response, QueryResult);
+{
+                      if Assigned(StatusCallback) then
+                      begin
+                        StatusCallback(CurrStatus);
+                        if CurrStatus = TProcessStatus.psEnded then
                           Exit;
+                      end;
+}
+                      if Assigned(Response) then
+                      begin
+                        try
+                          if Response.error = '' then
+                          begin
+                            if Length(Response.matches) = 0 then
+                              Exit;
+                            Result.ConcatMatches(Response.matches);
+{
+                            if Assigned(StatusCallback) then
+                            begin
+                              StatusCallback(CurrStatus);
+                              if CurrStatus = TProcessStatus.psEnded then
+                                Exit;
+                            end;
+}
+                            if Assigned(ProgressCallback) then
+                            begin
+                              CurrMatches := Length(Result.matches);
+                              TThread.Synchronize(
+                                              TThread.CurrentThread,
+                                              procedure
+                                              begin
+                                                ProgressCallback(Total, CurrMatches);
+                                              end
+                              );
+                            end;
+                          end
+                          else
+                          begin
+                            Result := nil;
+                            ErrMsg := Response.error;
+                            Exit;
+                          end;
+                        finally
+                          Response.Free;
                         end;
-                      finally
-                        Response.Free;
+                      end;
+                  end
+                  else
+                  begin
+                    if ErrMsg <> '' then
+                    begin
+                      Retry := Retry + 1;
+                      if Retry <= Retries then
+                      begin
+                        TThread.Sleep(1000);
+                        Continue;
+                      end
+                      else
+                      begin
+                        FreeAndNil(Result);
+                        ErrMsg := ErrMsg + ' (#' + IntToStr(Page) + ')';
                       end;
                     end;
-                end
-                else
-                begin
-                  if ErrMsg <> '' then
-                  begin
-                    Retry := Retry + 1;
-                    if Retry <= Retries then
-                    begin
-                      Application.ProcessMessages;
-                      Sleep(1000);
-                      Application.ProcessMessages;
-                      Continue;
-                    end
-                    else
-                    begin
-                      FreeAndNil(Result);
-                      ErrMsg := ErrMsg + ' (#' + IntToStr(Page) + ')';
-                    end;
                   end;
+                  Page := Page + 1;
                 end;
-                Page := Page + 1;
               end;
+            finally
+              if Assigned(QueryResult) then
+                QueryResult.Free;
             end;
-          finally
-            if Assigned(QueryResult) then
-              QueryResult.Free;
           end;
+        finally
+          LReader.Free;
         end;
       finally
-        LReader.Free;
+        Params.Free;
       end;
-    finally
-      Params.Free;
+    except
+      on E: Exception do
+      begin
+        FreeAndNil(Result);
+        ErrMsg := E.Message;
+      end;
     end;
-  except
-    on E: Exception do
-    begin
-      FreeAndNil(Result);
-      ErrMsg := E.Message;
-    end;
+  finally
+      if Assigned(TaskFinishedCallBack) then
+        TThread.Synchronize(TThread.CurrentThread, TaskFinishedCallBack);
   end;
 
 end;
