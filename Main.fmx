@@ -40,9 +40,10 @@ object frmMain: TfrmMain
     Size.PlatformDefault = False
     StyleLookup = 'tabcontrolstyle'
     TabHeight = 49.000000000000000000
-    TabIndex = 0
+    TabIndex = 2
     TabOrder = 1
     TabPosition = PlatformDefault
+    OnChange = tabMainChange
     Sizes = (
       800s
       471s
@@ -54,7 +55,7 @@ object frmMain: TfrmMain
       CustomIcon = <
         item
         end>
-      IsSelected = True
+      IsSelected = False
       Padding.Left = 10.000000000000000000
       Padding.Top = 10.000000000000000000
       Padding.Right = 10.000000000000000000
@@ -179,7 +180,7 @@ object frmMain: TfrmMain
           object prgWait: TProgressBar
             Align = Bottom
             Orientation = Horizontal
-            Position.Y = 140.000000000000000000
+            Position.Y = 130.000000000000000000
             Size.Width = 300.000000000000000000
             Size.Height = 30.000000000000000000
             Size.PlatformDefault = False
@@ -484,6 +485,38 @@ object frmMain: TfrmMain
         Viewport.Width = 776.000000000000000000
         Viewport.Height = 96.000000000000000000
       end
+      object layBruteforcePrg: TLayout
+        Align = Bottom
+        Position.Y = 331.000000000000000000
+        Size.Width = 800.000000000000000000
+        Size.Height = 30.000000000000000000
+        Size.PlatformDefault = False
+        Visible = False
+        TabOrder = 4
+        object cmdStopBruteForce: TButton
+          Align = Right
+          StyledSettings = [Family, Size, FontColor]
+          Margins.Right = 10.000000000000000000
+          Position.X = 754.000000000000000000
+          Size.Width = 36.000000000000000000
+          Size.Height = 30.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'cleareditbutton'
+          TabOrder = 0
+          Text = 'Clear'
+          OnClick = cmdExitClick
+        end
+        object prgBruteForce: TProgressBar
+          Align = Client
+          Orientation = Horizontal
+          Margins.Left = 10.000000000000000000
+          Margins.Right = 10.000000000000000000
+          Margins.Bottom = 4.000000000000000000
+          Size.Width = 734.000000000000000000
+          Size.Height = 26.000000000000000000
+          Size.PlatformDefault = False
+        end
+      end
     end
     object tabArchive: TTabItem
       CustomIcon = <
@@ -503,7 +536,7 @@ object frmMain: TfrmMain
       CustomIcon = <
         item
         end>
-      IsSelected = False
+      IsSelected = True
       Size.Width = 266.000000000000000000
       Size.Height = 49.000000000000000000
       Size.PlatformDefault = False
@@ -523,9 +556,10 @@ object frmMain: TfrmMain
         Size.PlatformDefault = False
         StyleLookup = 'tabcontrolstyle'
         TabHeight = 49.000000000000000000
-        TabIndex = 0
+        TabIndex = 1
         TabOrder = 1
         TabPosition = PlatformDefault
+        OnChange = tabSettingsContentChange
         Sizes = (
           790s
           417s
@@ -535,7 +569,7 @@ object frmMain: TfrmMain
           CustomIcon = <
             item
             end>
-          IsSelected = True
+          IsSelected = False
           Padding.Left = 10.000000000000000000
           Padding.Top = 10.000000000000000000
           Padding.Right = 10.000000000000000000
@@ -554,6 +588,8 @@ object frmMain: TfrmMain
             Padding.Top = 20.000000000000000000
             Padding.Right = 10.000000000000000000
             Padding.Bottom = 10.000000000000000000
+            Margins.Top = 4.000000000000000000
+            Position.Y = 4.000000000000000000
             Size.Width = 790.000000000000000000
             Size.Height = 55.000000000000000000
             Size.PlatformDefault = False
@@ -571,19 +607,326 @@ object frmMain: TfrmMain
             end
           end
         end
-        object TabItem2: TTabItem
+        object tabBruteForce: TTabItem
           CustomIcon = <
             item
             end>
-          IsSelected = False
+          IsSelected = True
           Size.Width = 399.000000000000000000
           Size.Height = 49.000000000000000000
           Size.PlatformDefault = False
           StyleLookup = ''
           TabOrder = 0
-          Text = 'TabItem2'
+          Text = 'Brute Force'
           ExplicitSize.cx = 399.000000000000000000
           ExplicitSize.cy = 49.000000000000000000
+          object grpBruteForceType: TGroupBox
+            Align = Top
+            Padding.Left = 10.000000000000000000
+            Padding.Top = 20.000000000000000000
+            Padding.Right = 10.000000000000000000
+            Padding.Bottom = 10.000000000000000000
+            Margins.Top = 4.000000000000000000
+            Position.Y = 4.000000000000000000
+            Size.Width = 790.000000000000000000
+            Size.Height = 55.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Password Brute Force Type'
+            TabOrder = 3
+            object cboBruteForceType: TComboBox
+              Align = Client
+              Items.Strings = (
+                'Dictionary'
+                'a - z'
+                'a - z + 0 - 9'
+                'A - z'
+                'A - z + 0 - 9'
+                'a - z + 0 - 9 + special characters'
+                'A - z + 0 - 9 + special characters'
+                'Dictionary + a - z'
+                'Dictionary + a - z + 0 - 9'
+                'Dictionary + A - z'
+                'Dictionary + A - z + 0 - 9'
+                'Dictionary + a - z + 0 - 9 + special characters'
+                'Dictionary + A - z + 0 - 9 + special characters')
+              Size.Width = 770.000000000000000000
+              Size.Height = 25.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 1
+            end
+          end
+          object grpPassMinLen: TGroupBox
+            Align = Top
+            Padding.Left = 10.000000000000000000
+            Padding.Top = 20.000000000000000000
+            Padding.Right = 10.000000000000000000
+            Padding.Bottom = 10.000000000000000000
+            Margins.Top = 2.000000000000000000
+            Position.Y = 61.000000000000000000
+            Size.Width = 790.000000000000000000
+            Size.Height = 55.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Password Minimum Length (ignored for dictionary)'
+            TabOrder = 2
+            object txtPassMinLen: TNumberBox
+              Touch.InteractiveGestures = [LongTap, DoubleTap]
+              Align = Client
+              TabOrder = 2
+              Cursor = crIBeam
+              DecimalDigits = 0
+              Min = 1.000000000000000000
+              Max = 20.000000000000000000
+              Value = 4.000000000000000000
+              VertIncrement = 1.000000000000000000
+              Size.Width = 770.000000000000000000
+              Size.Height = 25.000000000000000000
+              Size.PlatformDefault = False
+              OnExit = txtPassMinLenExit
+            end
+          end
+          object grpPassMaxLen: TGroupBox
+            Align = Top
+            Padding.Left = 10.000000000000000000
+            Padding.Top = 20.000000000000000000
+            Padding.Right = 10.000000000000000000
+            Padding.Bottom = 10.000000000000000000
+            Margins.Top = 2.000000000000000000
+            Position.Y = 118.000000000000000000
+            Size.Width = 790.000000000000000000
+            Size.Height = 55.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Password Maximum Length (ignored for dictionary)'
+            TabOrder = 1
+            object txtPassMaxLen: TNumberBox
+              Touch.InteractiveGestures = [LongTap, DoubleTap]
+              Align = Client
+              TabOrder = 3
+              Cursor = crIBeam
+              DecimalDigits = 0
+              Min = 1.000000000000000000
+              Max = 20.000000000000000000
+              Value = 8.000000000000000000
+              VertIncrement = 1.000000000000000000
+              Size.Width = 770.000000000000000000
+              Size.Height = 25.000000000000000000
+              Size.PlatformDefault = False
+              OnExit = txtPassMaxLenExit
+            end
+          end
+          object grpPassSpecialChars: TGroupBox
+            Align = Top
+            Padding.Left = 10.000000000000000000
+            Padding.Top = 20.000000000000000000
+            Padding.Right = 10.000000000000000000
+            Padding.Bottom = 10.000000000000000000
+            Margins.Top = 2.000000000000000000
+            Position.Y = 175.000000000000000000
+            Size.Width = 790.000000000000000000
+            Size.Height = 55.000000000000000000
+            Size.PlatformDefault = False
+            Text = 'Password Special Characters'
+            TabOrder = 0
+            object txtPassSpecialChars: TEdit
+              Touch.InteractiveGestures = [LongTap, DoubleTap]
+              Align = Top
+              TabOrder = 1
+              Text = '!"#$%&'#39'()*+,-./;<=>?@[\]^_|'
+              Position.X = 10.000000000000000000
+              Position.Y = 20.000000000000000000
+              Size.Width = 770.000000000000000000
+              Size.Height = 22.000000000000000000
+              Size.PlatformDefault = False
+            end
+          end
+          object layDictionaries: TGridLayout
+            Align = Client
+            ItemHeight = 183.000000000000000000
+            ItemWidth = 390.000000000000000000
+            Orientation = Horizontal
+            Margins.Top = 4.000000000000000000
+            Size.Width = 790.000000000000000000
+            Size.Height = 183.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 4
+            OnResized = layDictionariesResized
+            object grpUserNameDic: TGroupBox
+              Padding.Left = 5.000000000000000000
+              Padding.Top = 5.000000000000000000
+              Padding.Right = 5.000000000000000000
+              Padding.Bottom = 5.000000000000000000
+              Size.Width = 390.000000000000000000
+              Size.Height = 183.000000000000000000
+              Size.PlatformDefault = False
+              Text = 'Username Dictionary'
+              TabOrder = 1
+              object panUserNameDicCommands: TPanel
+                Align = Bottom
+                Padding.Left = 4.000000000000000000
+                Padding.Top = 4.000000000000000000
+                Padding.Right = 4.000000000000000000
+                Padding.Bottom = 4.000000000000000000
+                Margins.Left = 4.000000000000000000
+                Margins.Top = 4.000000000000000000
+                Margins.Right = 4.000000000000000000
+                Margins.Bottom = 4.000000000000000000
+                Position.X = 9.000000000000000000
+                Position.Y = 144.000000000000000000
+                Size.Width = 372.000000000000000000
+                Size.Height = 30.000000000000000000
+                Size.PlatformDefault = False
+                TabOrder = 0
+                object cmdClearUserNameDic: TButton
+                  Align = Right
+                  Position.X = 308.000000000000000000
+                  Position.Y = 4.000000000000000000
+                  Size.Width = 60.000000000000000000
+                  Size.Height = 22.000000000000000000
+                  Size.PlatformDefault = False
+                  TabOrder = 2
+                  Text = 'Clear'
+                  OnClick = cmdClearUserNameDicClick
+                end
+                object cmdAddUserNameDic: TButton
+                  Align = Right
+                  Margins.Right = 4.000000000000000000
+                  Position.X = 244.000000000000000000
+                  Position.Y = 4.000000000000000000
+                  Size.Width = 60.000000000000000000
+                  Size.Height = 22.000000000000000000
+                  Size.PlatformDefault = False
+                  TabOrder = 1
+                  Text = 'Add...'
+                  OnClick = cmdAddUserNameDicClick
+                end
+                object cmdLoadUserNameDic: TButton
+                  Align = Right
+                  Margins.Right = 4.000000000000000000
+                  Position.X = 180.000000000000000000
+                  Position.Y = 4.000000000000000000
+                  Size.Width = 60.000000000000000000
+                  Size.Height = 22.000000000000000000
+                  Size.PlatformDefault = False
+                  TabOrder = 0
+                  Text = 'Load...'
+                  OnClick = cmdLoadUserNameDicClick
+                end
+                object lblUserNameDicCount: TLabel
+                  Align = Client
+                  Margins.Right = 4.000000000000000000
+                  Size.Width = 172.000000000000000000
+                  Size.Height = 22.000000000000000000
+                  Size.PlatformDefault = False
+                  TextSettings.Trimming = Word
+                  Text = '0 items'
+                  TabOrder = 3
+                end
+              end
+              object txtUserNameDic: TMemo
+                Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+                DataDetectorTypes = []
+                ReadOnly = True
+                Align = Client
+                Margins.Left = 4.000000000000000000
+                Margins.Top = 14.000000000000000000
+                Margins.Right = 4.000000000000000000
+                Size.Width = 372.000000000000000000
+                Size.Height = 121.000000000000000000
+                Size.PlatformDefault = False
+                TabOrder = 1
+                Viewport.Width = 368.000000000000000000
+                Viewport.Height = 117.000000000000000000
+              end
+            end
+            object grpPasswordDic: TGroupBox
+              Padding.Left = 5.000000000000000000
+              Padding.Top = 5.000000000000000000
+              Padding.Right = 5.000000000000000000
+              Padding.Bottom = 5.000000000000000000
+              Position.X = 390.000000000000000000
+              Size.Width = 390.000000000000000000
+              Size.Height = 183.000000000000000000
+              Size.PlatformDefault = False
+              Text = 'Password Dictionary'
+              TabOrder = 0
+              object panPasswordDicCommands: TPanel
+                Align = Bottom
+                Padding.Left = 4.000000000000000000
+                Padding.Top = 4.000000000000000000
+                Padding.Right = 4.000000000000000000
+                Padding.Bottom = 4.000000000000000000
+                Margins.Left = 4.000000000000000000
+                Margins.Top = 4.000000000000000000
+                Margins.Right = 4.000000000000000000
+                Margins.Bottom = 4.000000000000000000
+                Position.X = 9.000000000000000000
+                Position.Y = 144.000000000000000000
+                Size.Width = 372.000000000000000000
+                Size.Height = 30.000000000000000000
+                Size.PlatformDefault = False
+                TabOrder = 1
+                object cmdClearPasswordDic: TButton
+                  Align = Right
+                  Position.X = 308.000000000000000000
+                  Position.Y = 4.000000000000000000
+                  Size.Width = 60.000000000000000000
+                  Size.Height = 22.000000000000000000
+                  Size.PlatformDefault = False
+                  TabOrder = 3
+                  Text = 'Clear'
+                  OnClick = cmdClearPasswordDicClick
+                end
+                object cmdAddPasswordDic: TButton
+                  Align = Right
+                  Margins.Right = 4.000000000000000000
+                  Position.X = 244.000000000000000000
+                  Position.Y = 4.000000000000000000
+                  Size.Width = 60.000000000000000000
+                  Size.Height = 22.000000000000000000
+                  Size.PlatformDefault = False
+                  TabOrder = 2
+                  Text = 'Add...'
+                  OnClick = cmdAddPasswordDicClick
+                end
+                object cmdLoadPasswordDic: TButton
+                  Align = Right
+                  Margins.Right = 4.000000000000000000
+                  Position.X = 180.000000000000000000
+                  Position.Y = 4.000000000000000000
+                  Size.Width = 60.000000000000000000
+                  Size.Height = 22.000000000000000000
+                  Size.PlatformDefault = False
+                  TabOrder = 1
+                  Text = 'Load...'
+                  OnClick = cmdLoadPasswordDicClick
+                end
+                object lblPasswordDicCount: TLabel
+                  Align = Client
+                  Margins.Right = 4.000000000000000000
+                  Size.Width = 172.000000000000000000
+                  Size.Height = 22.000000000000000000
+                  Size.PlatformDefault = False
+                  TextSettings.Trimming = Word
+                  Text = '0 items'
+                  TabOrder = 4
+                end
+              end
+              object txtPasswordDic: TMemo
+                Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+                DataDetectorTypes = []
+                ReadOnly = True
+                Align = Client
+                Margins.Left = 4.000000000000000000
+                Margins.Top = 14.000000000000000000
+                Margins.Right = 4.000000000000000000
+                Size.Width = 372.000000000000000000
+                Size.Height = 121.000000000000000000
+                Size.PlatformDefault = False
+                TabOrder = 2
+                Viewport.Width = 368.000000000000000000
+                Viewport.Height = 117.000000000000000000
+              end
+            end
+          end
         end
       end
     end
@@ -756,6 +1099,11 @@ object frmMain: TfrmMain
           end>
       end>
     Left = 24
+    Top = 8
+  end
+  object dlgOpenFile: TOpenDialog
+    Options = [ofReadOnly, ofHideReadOnly, ofAllowMultiSelect, ofPathMustExist, ofFileMustExist, ofEnableSizing]
+    Left = 80
     Top = 8
   end
 end

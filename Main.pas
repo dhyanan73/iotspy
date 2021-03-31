@@ -8,10 +8,14 @@ uses
   FMX.StdCtrls, FMX.Gestures, FMX.Controls.Presentation, FMX.Layouts,
   FMX.Edit, System.Math.Vectors, FMX.Controls3D, FMX.Layers3D,
   FMX.ScrollBox, FMX.Memo, FMX.Objects, FrameRow, ClassDeviceConnect,
-  FMX.ExtCtrls, FMX.Ani, System.Threading, FMX.ImgList, System.ImageList;
+  FMX.ExtCtrls, FMX.Ani, System.Threading, FMX.ImgList, System.ImageList,
+  FMX.ListBox, FMX.EditBox, FMX.NumberBox;
 
 type
 
+  TIoTBruteforceType = (btDictionary, btLCase, btLCaseDigits, btLUCase, btLUCaseDigits, btLCaseDigitsSpec,
+                        btLUCaseDigitsSpec, btDicLCase, btDicLCaseDigits, btDicLUCase, btDicLUCaseDigits,
+                        btDicLCaseDigitsSpec, btDicLUCaseDigitsSpec);
   TIoTImages = (imNone = -1, imIdleStatus = 0, imWorkingStatus = 1);
   TIoTLogType = (ltUnknown, ltInfo, ltAlert, ltError);
   TProcessStatus =  (
@@ -49,7 +53,7 @@ type
     txtLog: TMemo;
     tabSettingsContent: TTabControl;
     tabSystem: TTabItem;
-    TabItem2: TTabItem;
+    tabBruteForce: TTabItem;
     grpAPIKey: TGroupBox;
     txtAPIKey: TEdit;
     panWait: TPanel;
@@ -63,6 +67,33 @@ type
     glyStatus: TGlyph;
     imlMain: TImageList;
     lblStatus: TLabel;
+    grpBruteForceType: TGroupBox;
+    cboBruteForceType: TComboBox;
+    grpPassMinLen: TGroupBox;
+    txtPassMinLen: TNumberBox;
+    grpPassMaxLen: TGroupBox;
+    txtPassMaxLen: TNumberBox;
+    grpPassSpecialChars: TGroupBox;
+    txtPassSpecialChars: TEdit;
+    layDictionaries: TGridLayout;
+    grpUserNameDic: TGroupBox;
+    panUserNameDicCommands: TPanel;
+    cmdClearUserNameDic: TButton;
+    cmdAddUserNameDic: TButton;
+    cmdLoadUserNameDic: TButton;
+    txtUserNameDic: TMemo;
+    grpPasswordDic: TGroupBox;
+    panPasswordDicCommands: TPanel;
+    cmdClearPasswordDic: TButton;
+    cmdAddPasswordDic: TButton;
+    cmdLoadPasswordDic: TButton;
+    txtPasswordDic: TMemo;
+    lblUserNameDicCount: TLabel;
+    lblPasswordDicCount: TLabel;
+    layBruteforcePrg: TLayout;
+    cmdStopBruteForce: TButton;
+    prgBruteForce: TProgressBar;
+    dlgOpenFile: TOpenDialog;
     procedure FormCreate(Sender: TObject);
     procedure FormGesture(Sender: TObject; const EventInfo: TGestureEventInfo; var Handled: Boolean);
     procedure cmdExitClick(Sender: TObject);
@@ -75,15 +106,28 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
+    procedure layDictionariesResized(Sender: TObject);
+    procedure tabMainChange(Sender: TObject);
+    procedure txtPassMinLenExit(Sender: TObject);
+    procedure txtPassMaxLenExit(Sender: TObject);
+    procedure tabSettingsContentChange(Sender: TObject);
+    procedure cmdClearUserNameDicClick(Sender: TObject);
+    procedure cmdClearPasswordDicClick(Sender: TObject);
+    procedure cmdLoadUserNameDicClick(Sender: TObject);
+    procedure cmdLoadPasswordDicClick(Sender: TObject);
+    procedure cmdAddPasswordDicClick(Sender: TObject);
+    procedure cmdAddUserNameDicClick(Sender: TObject);
   private
-//    AStopProcess: boolean;
     CurrTask: ITask;
     function DeviceConnect(DeviceType: TIoTDeviceType; Host: string; Port: integer; Auth: string; out Msg: string): TfraRow;
     procedure TaskFinished;
     procedure SaveSettings;
     procedure LoadSettings;
+    procedure ValidatePwdLenLimit(Source: TNumberBox = nil);
+    procedure SaveUserNameDic;
+    procedure SavePasswordDic;
+    function OpenFile: string;
   protected
-//    property StopProcess: boolean read AStopProcess write AStopProcess default false;
   public
     procedure Log(const Msg: string; LogType: TIoTLogType = TIoTLogType.ltInfo);
     procedure CancelTask(Task: ITask);
@@ -105,6 +149,37 @@ uses
   , SettingsPersistence
   , Constants;
 
+procedure ClearStringDuplicateItems(Lines: TStrings; CaseSensitive: boolean = true);
+var
+  i, x: Int64;
+  Done: boolean;
+
+begin
+
+  i := 0;
+  Done := false;
+
+  while not Done do
+  begin
+    if i < Lines.Count then
+    begin
+      for x := Lines.Count - 1 downto i + 1  do
+        if CaseSensitive then
+        begin
+          if Lines[x] = Lines[i] then
+            Lines.Delete(x);
+        end
+        else
+          if UpperCase(Lines[x]) = UpperCase(Lines[i]) then
+            Lines.Delete(x);
+      i := i + 1;
+    end
+    else
+      Done := true;
+  end;
+
+end;
+
 procedure TfrmMain.CancelTask(Task: ITask);
 begin
 
@@ -119,12 +194,186 @@ begin
 
 end;
 
+procedure TfrmMain.cmdAddPasswordDicClick(Sender: TObject);
+var
+  FileName: string;
+  StringList: TStringList;
+
+begin
+
+  cmdAddPasswordDic.Enabled := false;
+
+  try
+    FileName := OpenFile();
+    if FileExists(FileName) and (FileName <> '') then
+    begin
+      txtPasswordDic.Lines.BeginUpdate;
+      try
+        StringList := TStringList.Create;
+        try
+          StringList.LoadFromFile(FileName);
+          txtPasswordDic.Lines.AddStrings(StringList);
+        finally
+          StringList.Free;
+        end;
+        ClearStringDuplicateItems(txtPasswordDic.Lines);
+        SavePasswordDic;
+      finally
+        txtPasswordDic.Lines.EndUpdate;
+      end;
+      lblPasswordDicCount.Text := IntTostr(txtPasswordDic.Lines.Count) + ' items';
+    end;
+  finally
+    cmdAddPasswordDic.Enabled := true;
+  end;
+
+end;
+
+procedure TfrmMain.cmdAddUserNameDicClick(Sender: TObject);
+var
+  FileName: string;
+  StringList: TStringList;
+
+begin
+
+  cmdAddUserNameDic.Enabled := false;
+
+  try
+    FileName := OpenFile();
+    if FileExists(FileName) and (FileName <> '') then
+    begin
+      txtUserNameDic.Lines.BeginUpdate;
+      try
+        StringList := TStringList.Create;
+        try
+          StringList.LoadFromFile(FileName);
+          txtUserNameDic.Lines.AddStrings(StringList);
+        finally
+          StringList.Free;
+        end;
+        ClearStringDuplicateItems(txtUserNameDic.Lines, false);
+        SaveUserNameDic;
+      finally
+        txtUserNameDic.Lines.EndUpdate;
+      end;
+      lblUserNameDicCount.Text := IntTostr(txtUserNameDic.Lines.Count) + ' items';
+    end;
+  finally
+    cmdAddUserNameDic.Enabled := true;
+  end;
+
+end;
+
+procedure TfrmMain.cmdClearPasswordDicClick(Sender: TObject);
+begin
+
+  cmdClearPasswordDic.Enabled := false;
+
+  try
+    txtPasswordDic.Lines.BeginUpdate;
+    try
+      txtPasswordDic.Lines.Clear;
+      SavePasswordDic;
+    finally
+      txtPasswordDic.Lines.EndUpdate;
+    end;
+    lblPasswordDicCount.Text := IntTostr(txtPasswordDic.Lines.Count) + ' items';
+  finally
+    cmdClearPasswordDic.Enabled := true;
+  end;
+
+end;
+
+procedure TfrmMain.cmdClearUserNameDicClick(Sender: TObject);
+begin
+
+  cmdClearUserNameDic.Enabled := false;
+
+  try
+    txtUserNameDic.Lines.BeginUpdate;
+    try
+      txtUserNameDic.Lines.Clear;
+      SaveUserNameDic;
+    finally
+      txtUserNameDic.Lines.EndUpdate;
+    end;
+    lblUserNameDicCount.Text := IntTostr(txtUserNameDic.Lines.Count) + ' items';
+  finally
+    cmdClearUserNameDic.Enabled := true;
+  end;
+
+end;
+
 procedure TfrmMain.cmdExitClick(Sender: TObject);
 begin
 
   cmdExit.Enabled := false;
   Application.ProcessMessages;
   Close;
+
+end;
+
+procedure TfrmMain.cmdLoadPasswordDicClick(Sender: TObject);
+var
+  FileName: string;
+
+begin
+
+  cmdLoadPasswordDic.Enabled := false;
+
+  try
+    if Assigned(Sender) then
+      FileName := OpenFile()
+    else
+      FileName := GetAppDataFldPath + IOT_PASSWORD_DICT_FILE_NAME;
+    if FileExists(FileName) and (FileName <> '') then
+    begin
+      txtPasswordDic.Lines.BeginUpdate;
+      try
+        txtPasswordDic.Lines.LoadFromFile(FileName);
+        ClearStringDuplicateItems(txtPasswordDic.Lines);
+        if Assigned(Sender) then
+          SavePasswordDic;
+      finally
+        txtPasswordDic.Lines.EndUpdate;
+      end;
+      lblPasswordDicCount.Text := IntTostr(txtPasswordDic.Lines.Count) + ' items';
+    end;
+  finally
+    cmdLoadPasswordDic.Enabled := true;
+  end;
+
+end;
+
+procedure TfrmMain.cmdLoadUserNameDicClick(Sender: TObject);
+var
+  FileName: string;
+
+begin
+
+  cmdLoadUserNameDic.Enabled := false;
+
+  try
+    if Assigned(Sender) then
+      FileName := OpenFile()
+    else
+      FileName := GetAppDataFldPath + IOT_USER_NAME_DICT_FILE_NAME;
+    if FileExists(FileName) and (FileName <> '') then
+    begin
+      txtUserNameDic.Lines.BeginUpdate;
+      try
+        txtUserNameDic.Lines.LoadFromFile(FileName);
+        ClearStringDuplicateItems(txtUserNameDic.Lines, false);
+        if Assigned(Sender) then
+          SaveUserNameDic;
+      finally
+        txtUserNameDic.Lines.EndUpdate;
+      end;
+      lblUserNameDicCount.Text := IntTostr(txtUserNameDic.Lines.Count) + ' items';
+    end;
+  finally
+    cmdLoadUserNameDic.Enabled := true;
+  end;
 
 end;
 
@@ -342,8 +591,8 @@ procedure TfrmMain.FormCreate(Sender: TObject);
 begin
 
   CurrTask := nil;
-  { This defines the default active tab at runtime }
   tabMain.ActiveTab := tabSearch;
+  tabSettingsContent.ActiveTab := tabSystem;
 
 end;
 
@@ -384,6 +633,16 @@ begin
 
 end;
 
+procedure TfrmMain.layDictionariesResized(Sender: TObject);
+begin
+
+  layDictionaries.ItemHeight := layDictionaries.Height;
+  layDictionaries.ItemWidth := Trunc(layDictionaries.ItemWidth / 2) - 2;
+  layDictionaries.Repaint;
+  Application.ProcessMessages;
+
+end;
+
 procedure TfrmMain.LoadSettings;
 begin
 
@@ -400,9 +659,13 @@ begin
   try
     txtSearch.Text := ReadSetting(IOT_SET_SECT_SYSTEM, IOT_SET_VAL_LAST_QUERY, '');
     txtAPIKey.Text := ReadSetting(IOT_SET_SECT_SYSTEM, IOT_SET_API_KEY, '');
-
-
-
+    cboBruteForceType.ItemIndex := ReadSetting(IOT_SET_SECT_BRUTE_FORCE, IOT_SET_VAL_BRUTE_FORCE_TYPE, 0);
+    txtPassMinLen.Text := ReadSetting(IOT_SET_SECT_BRUTE_FORCE, IOT_SET_VAL_BRUTE_FORCE_MIN_LEN, 4);
+    txtPassMaxLen.Text := ReadSetting(IOT_SET_SECT_BRUTE_FORCE, IOT_SET_VAL_BRUTE_FORCE_MAX_LEN, 8);
+    ValidatePwdLenLimit(txtPassMaxLen);
+    txtPassSpecialChars.Text := ReadSetting(IOT_SET_SECT_BRUTE_FORCE, IOT_SET_VAL_BRUTE_FORCE_SPECIAL_CHARS, '!"#$%&''()*+,-./;<=>?@[\]^_|');
+    cmdLoadUserNameDicClick(nil);
+    cmdLoadPasswordDicClick(nil);
   finally
     Log('Settings loaded');
     if Assigned(CurrTask) then
@@ -436,6 +699,16 @@ begin
     txtLog.GoToTextEnd;
     Application.ProcessMessages;
   end;
+
+end;
+
+function TfrmMain.OpenFile: string;
+begin
+
+  Result := '';
+
+  if dlgOpenFile.Execute then
+    Result := dlgOpenFile.FileName;
 
 end;
 
@@ -484,6 +757,13 @@ begin
 
 end;
 
+procedure TfrmMain.SavePasswordDic;
+begin
+
+  txtPasswordDic.Lines.SaveToFile(GetAppDataFldPath + IOT_PASSWORD_DICT_FILE_NAME);
+
+end;
+
 procedure TfrmMain.SaveSettings;
 begin
 
@@ -494,9 +774,11 @@ begin
   try
     WriteSetting(IOT_SET_SECT_SYSTEM, IOT_SET_VAL_LAST_QUERY, Trim(txtSearch.Text));
     WriteSetting(IOT_SET_SECT_SYSTEM, IOT_SET_API_KEY, Trim(txtAPIKey.Text));
-
-
-
+    WriteSetting(IOT_SET_SECT_BRUTE_FORCE, IOT_SET_VAL_BRUTE_FORCE_TYPE, cboBruteForceType.ItemIndex);
+    ValidatePwdLenLimit(txtPassMaxLen);
+    WriteSetting(IOT_SET_SECT_BRUTE_FORCE, IOT_SET_VAL_BRUTE_FORCE_MIN_LEN, txtPassMinLen.Text);
+    WriteSetting(IOT_SET_SECT_BRUTE_FORCE, IOT_SET_VAL_BRUTE_FORCE_MAX_LEN, txtPassMaxLen.Text);
+    WriteSetting(IOT_SET_SECT_BRUTE_FORCE, IOT_SET_VAL_BRUTE_FORCE_SPECIAL_CHARS, txtPassSpecialChars.Text);
   finally
     Log('Settings saved');
     if Assigned(CurrTask) then
@@ -507,6 +789,13 @@ begin
       lblStatus.Text := 'Idle';
     end;
   end;
+
+end;
+
+procedure TfrmMain.SaveUserNameDic;
+begin
+
+  txtUserNameDic.Lines.SaveToFile(GetAppDataFldPath + IOT_USER_NAME_DICT_FILE_NAME);
 
 end;
 
@@ -521,6 +810,27 @@ begin
 }
 end;
 
+procedure TfrmMain.tabMainChange(Sender: TObject);
+begin
+
+  layDictionariesResized(nil);
+
+  if tabMain.TabIndex = 0 then
+    txtSearch.SetFocus;
+
+end;
+
+procedure TfrmMain.tabSettingsContentChange(Sender: TObject);
+begin
+
+  if tabSettingsContent.TabIndex = 0 then
+    txtAPIKey.SetFocus;
+
+  if tabSettingsContent.TabIndex = 1 then
+    cboBruteForceType.SetFocus;
+
+end;
+
 procedure TfrmMain.TaskFinished;
 var
   Status: TProcessStatus;
@@ -529,6 +839,40 @@ begin
 
     Status := TProcessStatus.psEnded;
     ProcessStatusCallback(Status);
+
+end;
+
+procedure TfrmMain.txtPassMaxLenExit(Sender: TObject);
+begin
+
+  ValidatePwdLenLimit(txtPassMaxLen);
+
+end;
+
+procedure TfrmMain.txtPassMinLenExit(Sender: TObject);
+begin
+
+  ValidatePwdLenLimit(txtPassMinLen);
+
+end;
+
+procedure TfrmMain.ValidatePwdLenLimit(Source: TNumberBox = nil);
+begin
+
+  if Assigned(Source) then
+  begin
+    if Source.Equals(txtPassMinLen) then
+    begin
+      if StrToInt(txtPassMaxLen.Text) < StrToInt(txtPassMinLen.Text) then
+        txtPassMaxLen.Text := txtPassMinLen.Text;
+    end;
+    if Source.Equals(txtPassMaxLen) then
+    begin
+      if StrToInt(txtPassMinLen.Text) > StrToInt(txtPassMaxLen.Text) then
+        txtPassMinLen.Text := txtPassMaxLen.Text;
+    end;
+  end;
+
 
 end;
 
